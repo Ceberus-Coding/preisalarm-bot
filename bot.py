@@ -214,7 +214,7 @@ async def lookup(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     symbol = context.args[0].upper()
     try:
-        price = get_price(symbol)
+        price = get_price_eur(symbol)
         await update.message.reply_text(f"💹 Aktueller Preis für {symbol}: {price:.2f}", reply_markup=get_main_menu())
     except Exception as e:
         await update.message.reply_text(f"❗ Fehler beim Nachschlagen von {symbol}: {e}", reply_markup=get_main_menu())
