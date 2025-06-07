@@ -4,6 +4,20 @@ from db import add_alert, get_all_alarms, delete_alert, clear_user_alarms
 from checker import start_checker
 import yfinance as yf
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+import requests
+
+TWELVE_DATA_API_KEY = "a087ec207fe74aecbbf68a1b85699bea"
+
+def get_price_eur(symbol):
+    exchange_symbol = f"{symbol}.XETRA"
+    url = f"https://api.twelvedata.com/price?symbol={exchange_symbol}&apikey={TWELVE_DATA_API_KEY}"
+
+    response = requests.get(url)
+    data = response.json()
+    if "price" in data:
+        return float(data["price"])
+    else:
+        raise ValueError(f"Fehler beim Abrufen des Preises für {symbol}: {data.get('message', 'Unbekannter Fehler')}")
 
 def get_price(symbol):
     data = yf.Ticker(symbol).history(period="1d")
@@ -43,7 +57,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         symbol = parts[0].upper()
         target = float(parts[1])
         note = " ".join(parts[2:])
-        price = get_price(symbol)
+        price = get_price_eur(symbol)
         direction = "unter" if target < price else "über"
         add_alert(update.effective_chat.id, symbol, target, direction, note)
         await update.message.reply_text(
